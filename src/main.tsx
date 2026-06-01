@@ -10,10 +10,12 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      networkMode: "always"
+      networkMode: "always",
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     },
     mutations: {
-      networkMode: "always"
+      networkMode: "always",
     }
   }
 });

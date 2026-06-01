@@ -95,9 +95,17 @@ export function useAuth() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } }
+      options: {
+        data: { name },
+        emailRedirectTo: window.location.origin
+      }
     });
-    if (error) throw error;
+    if (error) {
+      if (error.code === "unexpected_failure" && error.message.includes("Database error saving new user")) {
+        throw new Error("Register gagal karena trigger database Supabase saat membuat user. Jalankan supabase/fix-auth-register.sql di SQL Editor Supabase.");
+      }
+      throw error;
+    }
     toast.success("Akun dibuat. Cek email bila konfirmasi aktif di Supabase.");
   }, []);
 

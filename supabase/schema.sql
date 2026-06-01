@@ -85,6 +85,13 @@ alter table public.transactions enable row level security;
 alter table public.budgets enable row level security;
 alter table public.goals enable row level security;
 
+drop policy if exists "profiles own rows" on public.profiles;
+drop policy if exists "categories own rows" on public.categories;
+drop policy if exists "wallets own rows" on public.wallets;
+drop policy if exists "transactions own rows" on public.transactions;
+drop policy if exists "budgets own rows" on public.budgets;
+drop policy if exists "goals own rows" on public.goals;
+
 create policy "profiles own rows" on public.profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
 create policy "categories own rows" on public.categories
@@ -106,6 +113,45 @@ begin
 end;
 $$;
 
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, name, avatar_url)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1), 'Teman CatetIn'),
+    new.raw_user_meta_data->>'avatar_url'
+  )
+  on conflict (id) do update set
+    email = excluded.email,
+    name = coalesce(excluded.name, public.profiles.name),
+    avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
+    updated_at = now(),
+    deleted_at = null;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+drop trigger if exists set_profiles_updated_at on public.profiles;
+drop trigger if exists set_categories_updated_at on public.categories;
+drop trigger if exists set_wallets_updated_at on public.wallets;
+drop trigger if exists set_transactions_updated_at on public.transactions;
+drop trigger if exists set_budgets_updated_at on public.budgets;
+drop trigger if exists set_goals_updated_at on public.goals;
+
+create trigger set_profiles_updated_at before update on public.profiles
+  for each row execute function public.set_updated_at();
 create trigger set_categories_updated_at before update on public.categories
   for each row execute function public.set_updated_at();
 create trigger set_wallets_updated_at before update on public.wallets

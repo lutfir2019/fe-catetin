@@ -21,7 +21,9 @@ export function useOfflineQuery<T>({ queryKey, localQuery, onlineSync, enabled =
       }
       return localData;
     },
-    staleTime: 1_000,
-    refetchOnWindowFocus: true
+    staleTime: 60_000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false
   });
 }

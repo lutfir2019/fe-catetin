@@ -9,7 +9,7 @@ export function Sidebar() {
   const setActivePage = useAppStore((state) => state.setActivePage);
 
   return (
-    <aside className="hidden w-72 shrink-0 border-r-2 border-foreground bg-white/86 p-4 lg:block">
+    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 overflow-y-auto border-r-2 border-foreground bg-white/86 p-4 lg:block">
       <div className="mb-6 flex items-center gap-3">
         <span className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-foreground bg-primary shadow-doodle">
           <Coins className="h-6 w-6" />

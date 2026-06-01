@@ -50,7 +50,7 @@ const queryKeys = {
 
 async function triggerSync(userId: string) {
   if (isSupabaseConfigured && (typeof navigator === "undefined" || navigator.onLine)) {
-    void syncService.syncNow(userId, "mutation");
+    syncService.scheduleSync(userId, "mutation");
   }
 }
 

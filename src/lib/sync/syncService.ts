@@ -5,8 +5,13 @@ import type { EntityMap, EntityName, QueueOperation, SyncQueueRecord } from "@/t
 
 type SyncReason = "app_start" | "login" | "online" | "mutation" | "manual" | "interval";
 type ConflictStrategy = "local" | "server" | "manual";
+export type SyncState = "idle" | "syncing" | "failed";
+type SyncListener = (state: SyncState) => void;
 
 const entities: EntityName[] = ["categories", "wallets", "transactions", "budgets", "goals"];
+const AUTO_SYNC_COOLDOWN_MS = 45_000;
+const AUTO_SYNC_INTERVAL_MS = 120_000;
+const MUTATION_SYNC_DELAY_MS = 1_200;
 
 function cleanForServer(record: Record<string, unknown>) {
   const {
@@ -38,12 +43,64 @@ function changedOnServer(localServerUpdatedAt: string | null, serverUpdatedAt: s
 
 class SyncService {
   private syncing = false;
+  private syncState: SyncState = "idle";
+  private listeners = new Set<SyncListener>();
   private intervalId: number | null = null;
+  private scheduledSyncId: number | null = null;
   private onlineHandler: (() => void) | null = null;
   private currentUserId: string | null = null;
+  private lastSuccessfulSyncAt = 0;
 
   isSyncing() {
     return this.syncing;
+  }
+
+  getState() {
+    return this.syncState;
+  }
+
+  subscribe(listener: SyncListener) {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private setSyncState(state: SyncState) {
+    this.syncState = state;
+    this.syncing = state === "syncing";
+    this.listeners.forEach((listener) => listener(state));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("catetin:sync-state", { detail: state }));
+    }
+  }
+
+  private shouldSkipAutoSync(reason: SyncReason, pendingQueueCount: number) {
+    if (reason === "manual" || reason === "online" || reason === "login" || pendingQueueCount > 0) {
+      return false;
+    }
+
+    return Date.now() - this.lastSuccessfulSyncAt < AUTO_SYNC_COOLDOWN_MS;
+  }
+
+  scheduleSync(userId = this.currentUserId, reason: SyncReason = "mutation", delayMs = MUTATION_SYNC_DELAY_MS) {
+    if (!userId || !isSupabaseConfigured || !canUseNetwork()) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      void this.syncNow(userId, reason);
+      return;
+    }
+
+    if (this.scheduledSyncId) {
+      window.clearTimeout(this.scheduledSyncId);
+    }
+
+    this.scheduledSyncId = window.setTimeout(() => {
+      this.scheduledSyncId = null;
+      void this.syncNow(userId, reason);
+    }, delayMs);
   }
 
   startAutoSync(userId: string) {
@@ -57,7 +114,7 @@ class SyncService {
       window.addEventListener("online", this.onlineHandler);
       this.intervalId = window.setInterval(() => {
         void this.syncNow(userId, "interval");
-      }, 60_000);
+      }, AUTO_SYNC_INTERVAL_MS);
     }
 
     void this.syncNow(userId, "app_start");
@@ -70,7 +127,11 @@ class SyncService {
     if (this.intervalId && typeof window !== "undefined") {
       window.clearInterval(this.intervalId);
     }
+    if (this.scheduledSyncId && typeof window !== "undefined") {
+      window.clearTimeout(this.scheduledSyncId);
+    }
     this.intervalId = null;
+    this.scheduledSyncId = null;
     this.onlineHandler = null;
     this.currentUserId = null;
   }
@@ -80,28 +141,42 @@ class SyncService {
       return { ok: false, skipped: true, reason };
     }
 
-    this.syncing = true;
+    await retryFailedQueue();
+    const queue = await getPendingQueue();
+    if (this.shouldSkipAutoSync(reason, queue.length)) {
+      return {
+        ok: true,
+        skipped: true,
+        reason,
+        cooldownMs: Math.max(0, AUTO_SYNC_COOLDOWN_MS - (Date.now() - this.lastSuccessfulSyncAt))
+      };
+    }
+
+    this.setSyncState("syncing");
     await setMeta("sync_state", "syncing");
 
     try {
-      await retryFailedQueue();
-      const queue = await getPendingQueue();
       for (const item of queue) {
         await this.pushQueueItem(item);
       }
       for (const entity of entities) {
         await this.pullEntity(entity, userId);
       }
+      this.lastSuccessfulSyncAt = Date.now();
       await setMeta("sync_state", "idle");
       await setMeta("last_sync_at", nowIso());
-      window.dispatchEvent(new CustomEvent("catetin:sync-complete"));
+      this.setSyncState("idle");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("catetin:sync-complete"));
+      }
       return { ok: true, skipped: false, reason };
     } catch (error) {
       await setMeta("sync_state", "failed");
-      window.dispatchEvent(new CustomEvent("catetin:sync-failed", { detail: stringifyError(error) }));
+      this.setSyncState("failed");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("catetin:sync-failed", { detail: stringifyError(error) }));
+      }
       return { ok: false, skipped: false, reason, error };
-    } finally {
-      this.syncing = false;
     }
   }
 

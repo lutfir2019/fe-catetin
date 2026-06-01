@@ -10,8 +10,10 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
+      staleTime: 60_000,
       networkMode: "always",
       refetchOnMount: false,
+      refetchOnReconnect: false,
       refetchOnWindowFocus: false,
     },
     mutations: {

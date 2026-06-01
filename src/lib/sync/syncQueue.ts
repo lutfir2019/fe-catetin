@@ -79,6 +79,6 @@ export async function markQueueDone(id: string) {
 }
 
 export async function retryFailedQueue() {
-  const failed = await db.syncQueue.where("status").equals("failed").toArray();
-  await Promise.all(failed.map((item) => db.syncQueue.update(item.id, { status: "pending" })));
+  const retryable = await db.syncQueue.where("status").anyOf(["failed", "syncing"] satisfies QueueStatus[]).toArray();
+  await Promise.all(retryable.map((item) => db.syncQueue.update(item.id, { status: "pending" })));
 }

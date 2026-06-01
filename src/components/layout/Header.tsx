@@ -1,4 +1,4 @@
-import { Bell, LogOut, Menu, UserRound } from "lucide-react";
+import { LogOut, Menu, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OfflineStatusBadge } from "@/components/offline/OfflineStatusBadge";
@@ -17,13 +17,20 @@ export function Header({ onOpenConflicts }: HeaderProps) {
   const setActivePage = useAppStore((state) => state.setActivePage);
   const user = useAppStore((state) => state.authUser);
   const { signOut } = useAuth();
-  const title = navItems.find((item) => item.page === activePage)?.label ?? "CatetIn";
+  const title =
+    navItems.find((item) => item.page === activePage)?.label ?? "CatetIn";
 
   return (
     <header className="sticky top-0 z-30 border-b-2 border-foreground bg-background/92 px-4 py-3 backdrop-blur">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setOpen((value) => !value)} type="button">
+          <Button
+            variant="outline"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setOpen((value) => !value)}
+            type="button"
+          >
             <Menu className="h-4 w-4" />
           </Button>
           <div>
@@ -35,12 +42,25 @@ export function Header({ onOpenConflicts }: HeaderProps) {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <OfflineStatusBadge />
-          <SyncQueueIndicator userId={user?.isDemo ? undefined : user?.id} onOpenConflicts={onOpenConflicts} />
-          <Button variant="outline" className="hidden sm:inline-flex" type="button">
+          <SyncQueueIndicator
+            userId={user?.isDemo ? undefined : user?.id}
+            onOpenConflicts={onOpenConflicts}
+          />
+          <Button
+            variant="outline"
+            className="hidden sm:inline-flex"
+            type="button"
+          >
             <UserRound className="h-4 w-4" />
             {user?.name ?? "User"}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => void signOut()} aria-label="Logout" type="button">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => void signOut()}
+            aria-label="Logout"
+            type="button"
+          >
             <LogOut className="h-4 w-4" />
           </Button>
         </div>

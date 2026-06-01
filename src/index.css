@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #2d2d2d;
+  background: #fff9f0;
+  font-family: "Inter", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12px 12px, rgba(255, 183, 3, 0.2) 0 2px, transparent 3px),
+    radial-gradient(circle at 42px 34px, rgba(142, 202, 230, 0.2) 0 2px, transparent 3px),
+    linear-gradient(135deg, rgba(255, 175, 204, 0.11), transparent 40%),
+    #fff9f0;
+  background-size:
+    64px 64px,
+    76px 76px,
+    auto,
+    auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.dark body,
+.dark {
+  background: #202020;
+  color: #fff9f0;
+}
+
+.font-heading {
+  letter-spacing: 0;
+}
+
+.sketch-border {
+  border: 2px solid #2d2d2d;
+  box-shadow: 3px 4px 0 rgba(45, 45, 45, 0.16);
+}
+
+.sketch-border-soft {
+  border: 1.5px solid rgba(45, 45, 45, 0.55);
+  box-shadow: 2px 3px 0 rgba(45, 45, 45, 0.1);
+}
+
+.doodle-pattern {
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='96' height='96' viewBox='0 0 96 96' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232D2D2D' stroke-opacity='.09' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M16 20c10-8 19-6 25 1'/%3E%3Cpath d='M68 20l5 5 8-10'/%3E%3Cpath d='M20 66h18M29 57v18'/%3E%3Ccircle cx='70' cy='70' r='9'/%3E%3Cpath d='M62 48c9 3 15 1 19-8'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(45, 45, 45, 0.22);
+  border-radius: 999px;
+}

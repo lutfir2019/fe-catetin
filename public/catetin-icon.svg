@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="CatetIn icon">
+  <rect x="48" y="48" width="416" height="416" rx="96" fill="#FFF9F0"/>
+  <path d="M125 151c56-42 193-38 258 6 38 26 41 92 9 135-46 62-173 82-246 37-64-40-76-136-21-178Z" fill="#8ECAE6" stroke="#2D2D2D" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M160 206h178M160 255h136M160 304h92" stroke="#2D2D2D" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="359" cy="315" r="52" fill="#FFB703" stroke="#2D2D2D" stroke-width="16"/>
+  <path d="M356 285v61M337 301c12-15 49-11 45 10-3 19-43 11-44 30-2 22 41 24 52 6" stroke="#2D2D2D" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <path d="M118 110l-23-28M393 107l29-25M429 392l28 25M88 387l-32 20" stroke="#FFAFCC" stroke-width="18" stroke-linecap="round"/>
+</svg>

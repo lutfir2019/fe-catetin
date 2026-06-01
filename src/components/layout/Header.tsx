@@ -36,9 +36,6 @@ export function Header({ onOpenConflicts }: HeaderProps) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <OfflineStatusBadge />
           <SyncQueueIndicator userId={user?.isDemo ? undefined : user?.id} onOpenConflicts={onOpenConflicts} />
-          <Button variant="outline" size="icon" aria-label="Notifikasi" type="button">
-            <Bell className="h-4 w-4" />
-          </Button>
           <Button variant="outline" className="hidden sm:inline-flex" type="button">
             <UserRound className="h-4 w-4" />
             {user?.name ?? "User"}
